@@ -94,4 +94,37 @@ callbacks_list = [checkpoint1, checkpoint2, reduce_lr]
 
 history = model.fit_generator(training_generator, validation_data = validation_generator, epochs = 5, verbose = 1, callbacks = callbacks_list)
 
-model.load_weights('/content/best_weights.hdf5')
+model.load_weights(path+"best_weights.hdf5")
+
+def solve_sudoku_with_nn(model, puzzle):
+    #Preprocess the inputted sudoku puzzle
+    puzzle = puzzle.replace('\n', '').replace(' ', '')
+    initial_board = np.array([int(j) for j in puzzle]).reshape((9, 9, 1))
+    initial_board = initial_board / 9 - 0.5
+
+    while True:
+        #Use NN to predict values for empty cells
+        predictions = model.predict(initial_board.reshape((1, 9, 9, 1))).squeeze()
+        pred = np.argmax(predictions, axis=1).reshape((9, 9)) + 1
+        prob = np.around(np.max(predictions, axis=1).reshape((9, 9)), 2)
+
+        initial_board = ((initial_board + 0.5) * 9).reshape((9, 9))
+        mask = (initial_board == 0)
+
+        if mask.sum() == 0:
+            #Puzzle is solved
+            break
+
+        prob_new = prob * mask
+
+        ind = np.argmax(prob_new)
+        x, y = (ind // 9), (ind % 9)
+
+        val = pred[x][y]
+        initial_board[x][y] = val
+        initial_board = (initial_board / 9) - 0.5
+    
+    #Convert solved puzzle to string
+    solved_puzzle = ''.join(map(str, initial_board.flatten().astype(int)))
+
+    return solved_puzzle
