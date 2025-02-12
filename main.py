@@ -99,12 +99,12 @@ model.load_weights(path+"best_weights.hdf5")
 def solve_sudoku_with_nn(model, puzzle):
     #Preprocess the inputted sudoku puzzle
     puzzle = puzzle.replace('\n', '').replace(' ', '')
-    initial_board = np.array([int(j) for j in puzzle]).reshape((9, 9, 1))
+    initial_board = np.array([int(j) for j in puzzle]).reshape((9, 9, 1)) #Convert string to 3D Numpy array
     initial_board = initial_board / 9 - 0.5
 
     while True:
         #Use NN to predict values for empty cells
-        predictions = model.predict(initial_board.reshape((1, 9, 9, 1))).squeeze()
+        predictions = model.predict(initial_board.reshape((1, 9, 9, 1))).squeeze() #Predict alues for empty cells
         pred = np.argmax(predictions, axis=1).reshape((9, 9)) + 1
         prob = np.around(np.max(predictions, axis=1).reshape((9, 9)), 2)
 
